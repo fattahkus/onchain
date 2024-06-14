@@ -286,7 +286,7 @@ const upgradeEnergy = (bearer) =>
 (async () => {
     while (true) {
         try{
-        const hash = 'query_id=AAG2YsYZAwAAALZixhkh_WCy&user=%7B%22id%22%3A6874882742%2C%22first_name%22%3A%22Nurdin%22%2C%22last_name%22%3A%22Sundoro%22%2C%22username%22%3A%22nurdinsundoro%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%7D&auth_date=1717979099&hash=ed21a22cb8650fd277c47673b5b3d2a1f92044d6badbcf5d22cf2f92b982e142'
+        const hash = ''
 
         // const getTokens = await getToken(hash)
 
