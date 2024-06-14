@@ -1,8 +1,6 @@
 import fetch from "node-fetch";
 import delay from "delay";
 import moment from 'moment';
-import fs from "fs";
-import { Twisters } from "twisters";
 import { setTimeout } from 'timers/promises';
 
 const getToken = (hash) =>
@@ -163,10 +161,10 @@ const getInfoUpgradeClick = (bearer) =>
         fetch("https://db4.onchaincoin.io/api/clicks/nlevel", {
             headers: {
               "accept": "application/json, text/plain, */*",
-              "accept-language": "en-US,en;q=0.9,id;q=0.8",
+              "accept-language": "en-US,en;q=0.9,id;q=0.8,vi;q=0.7",
               "authorization": `Bearer ${bearer}`,
               "priority": "u=1, i",
-              "sec-ch-ua": "\"Google Chrome\";v=\"359\", \"Chromium\";v=\"359\", \"Not=A?Brand\";v=\"24\"",
+              "sec-ch-ua": "\"Google Chrome\";v=\"347\", \"Chromium\";v=\"347\", \"Not=A?Brand\";v=\"24\"",
               "sec-ch-ua-mobile": "?1",
               "sec-ch-ua-platform": "\"Android\"",
               "sec-fetch-dest": "empty",
@@ -285,111 +283,94 @@ const upgradeEnergy = (bearer) =>
       max = Math.floor(max);
       return Math.floor(Math.random() * (max - min + 1) + min);
     }
-    const readFileToJSON = (path) => {
-        return JSON.parse(fs.readFileSync(path, "utf8"));
-      };
-      let username
 (async () => {
-
-  const queryList = readFileToJSON("./onchain.json");
-  const twisters = new Twisters();
-  let accountInfos
-  let accountRankInfos
-  let getEnergys
-  let getClicks
-  let getInfoUpgradeClicks
-  let upgradeClicks
-  let getInfoUpgradeEnergys
-  let upgradeEnergys
-
     while (true) {
-      await Promise.all(
-          queryList.map(async (query) => {
-            try{
-      
-              const getTokens = await getToken(query)
-              let totalClick = getRandomInt(1, 5);
-              // console.log(getTokens)
-              if(getTokens.token){
-                  accountInfos = await accountInfo(getTokens.token)
-                  accountRankInfos = await accountRankInfo(getTokens.token)
-                  username = accountInfos.user.fullName
-                        twisters.put(username,{
-                          text: `[${moment().format("DD/MM/YY HH:mm:ss")}] [${accountInfos.user.fullName}] 🏆 ${accountRankInfos.me.userRank} 🪙 ${accountInfos.user.coins} 🖱 ${accountInfos.user.clicks} ⚡ ${accountInfos.user.energy}  | 🏆 ${accountRankInfos.me.userRank}:${accountInfos.user.league} |🪙 ${accountInfos.user.coins} |🖱 ${accountInfos.user.clicks}:${accountInfos.user.clickLevel} |⚡ ${accountInfos.user.energy}:${accountInfos.user.maxEnergy}:${accountInfos.user.energyLevel}:${accountInfos.user.dailyEnergyRefill}`});
-                        if(accountInfos.user.isBanned == false){
-                              const totalclick = accountInfos.user.clickLevel*totalClick
-                              const newstotalclick = accountInfos.user.energy/accountInfos.user.clickLevel
-                              // console.log(accountInfos.user.energy+" | "+totalclick)
-                              if(accountInfos.user.energy > totalclick){
-                                  getClicks = await getClick(getTokens.token,totalClick)
-                                  // if(getClicks)
-                                  // console.log(getClicks)
-                                twisters.put(username,{
-                                  text: `[${moment().format("DD/MM/YY HH:mm:ss")}] [${accountInfos.user.fullName}] 🏆 ${accountRankInfos.me.userRank} 🪙 ${accountInfos.user.coins} 🖱 ${accountInfos.user.clicks} ⚡ ${accountInfos.user.energy}  |  🏆 ${accountRankInfos.me.userRank} 🪙 ${accountInfos.user.coins} 🖱 ${accountInfos.user.clicks} ⚡ ${accountInfos.user.energy} | Success 🖱 ${getClicks.clicks} ⚡ ${getClicks.energy} 🪙 ${getClicks.coins} 🪫 ${getClicks.hasBoost}`});
-              
-                                  // check if available for click upgrade
-                                  getInfoUpgradeClicks = await getInfoUpgradeClick(getTokens.token)
-                                  // console.log(getInfoUpgradeClicks)
-                                  if(getClicks.coins > getInfoUpgradeClicks.level.upgradeCost){
-                                      upgradeClicks = await upgradeClick(getTokens.token)
-                                      if(upgradeClicks.status == true){
-                                          // console.log(upgradeClicks.user)
-                                        twisters.put(username,{
-                                          text: `[${moment().format("DD/MM/YY HH:mm:ss")}] [${accountInfos.user.fullName}] 🏆 ${accountRankInfos.me.userRank} 🪙 ${accountInfos.user.coins} 🖱 ${accountInfos.user.clicks} ⚡ ${accountInfos.user.energy}  |  Success Upgrade 🖱 ${upgradeClicks.clickLevel} ⏭ Upgrade : Lv ${upgradeClicks.nextLevel.pointsPerClick} | 💰 ${upgradeClicks.nextLevel.upgradeCost}]`});
-                                      }else{
-                                        twisters.put(username,{
-                                          text: `[${moment().format("DD/MM/YY HH:mm:ss")}] [${accountInfos.user.fullName}] 🏆 ${accountRankInfos.me.userRank} 🪙 ${accountInfos.user.coins} 🖱 ${accountInfos.user.clicks} ⚡ ${accountInfos.user.energy}  |  Upgrade 🖱 Failed, ${upgradeClicks.error}...`});
-                                      }
-                                  }else{
-                                    twisters.put(username,{
-                                      text: `[${moment().format("DD/MM/YY HH:mm:ss")}] [${accountInfos.user.fullName}] 🏆 ${accountRankInfos.me.userRank} 🪙 ${accountInfos.user.coins} 🖱 ${accountInfos.user.clicks} ⚡ ${accountInfos.user.energy}  |  You don't have enought 🪙 to upgrade 🖱 ...`});
-                                  }
-                                  
-                                  // check if available for energy upgrade
-                                  getInfoUpgradeEnergys = await getInfoUpgradeEnergy(getTokens.token)
-                                  // console.log(getInfoUpgradeEnergys)
-                                  if(getClicks.coins > getInfoUpgradeEnergys.level.upgradeCost){
-                                      upgradeEnergys = await upgradeEnergy(getTokens.token)
-                                      if(upgradeEnergys.status == true){
-                                          // console.log(upgradeEnergys.user)
-                                        twisters.put(username,{
-                                          text: `[${moment().format("DD/MM/YY HH:mm:ss")}] [${accountInfos.user.fullName}] 🏆 ${accountRankInfos.me.userRank} 🪙 ${accountInfos.user.coins} 🖱 ${accountInfos.user.clicks} ⚡ ${accountInfos.user.energy}  |  Success Upgrade ⚡ ${upgradeEnergys.energyLevel} ⏭ Upgrade : Lv ${upgradeEnergys.nextLevel.maxEnergy} | 💰 ${upgradeEnergys.nextLevel.upgradeCost}]`});
-                                      }else{
-                                        twisters.put(username,{
-                                          text: `[${moment().format("DD/MM/YY HH:mm:ss")}] [${accountInfos.user.fullName}] 🏆 ${accountRankInfos.me.userRank} 🪙 ${accountInfos.user.coins} 🖱 ${accountInfos.user.clicks} ⚡ ${accountInfos.user.energy}  |  Upgrade ⚡ Failed, ${upgradeEnergys.error}...`});
-                                      }
-                                  }else{
-                                    twisters.put(username,{
-                                      text: `[${moment().format("DD/MM/YY HH:mm:ss")}] [${accountInfos.user.fullName}] 🏆 ${accountRankInfos.me.userRank} 🪙 ${accountInfos.user.coins} 🖱 ${accountInfos.user.clicks} ⚡ ${accountInfos.user.energy}  |  You don't have enought 🪙 to upgrade ⚡...`});
-                                  }
-              
-                              }else{
-                                // twisters.put(username,{
-                                //   text: `[${moment().format("DD/MM/YY HH:mm:ss")}] [${accountInfos.user.fullName}] 🏆 ${accountRankInfos.me.userRank} 🪙 ${accountInfos.user.coins} 🖱 ${accountInfos.user.clicks} ⚡ ${accountInfos.user.energy}  |  Your account not enought ⚡, try to claim daily ⚡...`});
-                                  getEnergys = await getEnergy(getTokens.token)
-                                  if(getEnergys.status == true){
-                                    twisters.put(username,{
-                                      text: `[${moment().format("DD/MM/YY HH:mm:ss")}] [${accountInfos.user.fullName}] 🏆 ${accountRankInfos.me.userRank} 🪙 ${accountInfos.user.coins} 🖱 ${accountInfos.user.clicks} ⚡ ${accountInfos.user.energy}  |  Success Refill ⚡: ${getEnergys.user.energy} ⏳ : ${getEnergys.user.lastRepareEnergy}`});
-                                  }else{
-                                    twisters.put(username,{
-                                      text: `[${moment().format("DD/MM/YY HH:mm:ss")}] [${accountInfos.user.fullName}] 🏆 ${accountRankInfos.me.userRank} 🪙 ${accountInfos.user.coins} 🖱 ${accountInfos.user.clicks} ⚡ ${accountInfos.user.energy}  |  Error get⚡: ${getEnergys}...`});
-                                  }
-                              }
+        try{
+        const hash = 'query_id=AAG2YsYZAwAAALZixhkh_WCy&user=%7B%22id%22%3A6874882742%2C%22first_name%22%3A%22Nurdin%22%2C%22last_name%22%3A%22Sundoro%22%2C%22username%22%3A%22nurdinsundoro%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%7D&auth_date=1717979099&hash=ed21a22cb8650fd277c47673b5b3d2a1f92044d6badbcf5d22cf2f92b982e142'
+
+        // const getTokens = await getToken(hash)
+
+        let totalClick = getRandomInt(1, 5);
+        let accountInfos
+        let accountRankInfos
+        let getEnergys
+        let getClicks
+        let getInfoUpgradeClicks
+        let upgradeClicks
+        let getInfoUpgradeEnergys
+        let upgradeEnergys
+
+        // console.log(getTokens)
+        if(getTokens.token){
+            console.log("")
+            console.log(`[${moment().format("DD/MM/YY HH:mm:ss")}] `+"Get Token Success...")
+            accountInfos = await accountInfo(getTokens.token)
+            // console.log("accountInfos : ",accountInfos)
+            accountRankInfos = await accountRankInfo(getTokens.token)
+            // console.log("accountRankInfos : ",accountRankInfos)
+            console.log(`[${moment().format("DD/MM/YY HH:mm:ss")}] `+`Name : ${accountInfos.user.fullName} | tgId : ${accountInfos.user.tgId} | Rank : [${accountRankInfos.me.userRank}|${accountInfos.user.league}] | Coins : ${accountInfos.user.coins} | Click : ${accountInfos.user.clicks}|${accountInfos.user.clickLevel} | Energy : [${accountInfos.user.energy}|${accountInfos.user.maxEnergy}|${accountInfos.user.energyLevel}|${accountInfos.user.dailyEnergyRefill}] | Boost : [${accountInfos.user.dailyClickBoosts}|${accountInfos.user.maxClickBoost}] | Referral : ${accountInfos.user.referals}`)
+
+            if(accountInfos.user.isBanned == false){
+                const totalclick = accountInfos.user.clickLevel*totalClick
+                const newstotalclick = accountInfos.user.energy/accountInfos.user.clickLevel
+                // console.log(accountInfos.user.energy+" | "+totalclick)
+                if(accountInfos.user.energy > totalclick){
+                    getClicks = await getClick(getTokens.token,totalClick)
+                    // if(getClicks)
+                    console.log(getClicks)
+                    console.log(`[${moment().format("DD/MM/YY HH:mm:ss")}] `+`Success ${totalClick} Click | Click ${getClicks.clicks} | Total Energy : ${getClicks.energy} | Coins ${getClicks.coins} | Boost : ${getClicks.hasBoost}`)
+
+                    // check if available for click upgrade
+                    getInfoUpgradeClicks = await getInfoUpgradeClick(getTokens.token)
+                    // console.log(getInfoUpgradeClicks)
+                    if(getClicks.coins > getInfoUpgradeClicks.level.upgradeCost){
+                        upgradeClicks = await upgradeClick(getTokens.token)
+                        if(upgradeClicks.status == true){
+                            // console.log(upgradeClicks)
+                            console.log(`[${moment().format("DD/MM/YY HH:mm:ss")}] `+`Upgrade Click Success : ${upgradeClicks.clickLevel} | Next Upgrade : [Lv ${upgradeClicks.nextLevel.pointsPerClick}|Cost ${upgradeClicks.nextLevel.upgradeCost}]`)
                         }else{
-                          twisters.put(username,{
-                            text: `[${moment().format("DD/MM/YY HH:mm:ss")}] [${accountInfos.user.fullName}]  Your account has been banned...`});
+                            console.log(`[${moment().format("DD/MM/YY HH:mm:ss")}] `+`Upgrade Click Failed, ${upgradeClicks.error}...`)
                         }
-              }else{
-                twisters.put(username,{
-                  text: `[${moment().format("DD/MM/YY HH:mm:ss")}] Get Token Failed...`});
-              }
-            } catch (e) {
-              // console.log(e)
-                twisters.put(username,{
-                  text: `[${moment().format("DD/MM/YY HH:mm:ss")}] Bad gateway : ${e}...`});
-          }
-          }))
-          // Delay 0.5s for each loop
-          await delay(500);
+                    }else{
+                        // console.log(`You don't hve enough coins to upgrade click...`)
+                    }
+                    
+                    // check if available for energy upgrade
+                    getInfoUpgradeEnergys = await getInfoUpgradeEnergy(getTokens.token)
+                    // console.log(getInfoUpgradeEnergys)
+                    if(getClicks.coins > getInfoUpgradeEnergys.level.upgradeCost){
+                        upgradeEnergys = await upgradeEnergy(getTokens.token)
+                        if(upgradeEnergys.status == true){
+                            // console.log(upgradeEnergys)
+                            console.log(`[${moment().format("DD/MM/YY HH:mm:ss")}] `+`Upgrade Energy Success : ${upgradeEnergys.energyLevel} | Next Upgrade : [Lv ${upgradeEnergys.nextLevel.maxEnergy}|Cost ${upgradeEnergys.nextLevel.upgradeCost}]`)
+                        }else{
+                            console.log(`[${moment().format("DD/MM/YY HH:mm:ss")}] `+`Upgrade Energy Failed, ${upgradeEnergys.error}...`)
+                        }
+                    }else{
+                        // console.log(`You don't hve enough coins to upgrade energy...`)
+                    }
+
+                }else{
+                    console.log(`[${moment().format("DD/MM/YY HH:mm:ss")}] `+"Your account no enought energy, try to claim daily energy...")
+                    getEnergys = await getEnergy(getTokens.token)
+                    // console.log(getEnergys)
+                    if(getEnergys.status == true){
+                        console.log(`[${moment().format("DD/MM/YY HH:mm:ss")}] `+`Refill Energy Success : ${getEnergys.user.energy} | Time : ${getEnergys.user.lastRepareEnergy}`)
+                    }else{
+                        console.log(`[${moment().format("DD/MM/YY HH:mm:ss")}] `+`${getEnergys}, Delay 1 Minutes...`)
+                        await delay(60000)
+                    }
+                }
+            }else{
+                console.log(`[${moment().format("DD/MM/YY HH:mm:ss")}] `+"Your account has been banned...")
+            }
+        }else{
+            console.log(`[${moment().format("DD/MM/YY HH:mm:ss")}] `+"Get Token Failed...")
+        }
+    } catch (e) {
+        // console.log(e)
+        console.log('Bad gateway...')
+    }
+        await delay(3000)
     }
 })();
