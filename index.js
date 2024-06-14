@@ -288,32 +288,22 @@ const upgradeEnergy = (bearer) =>
     const readFileToJSON = (path) => {
         return JSON.parse(fs.readFileSync(path, "utf8"));
       };
-      let username
 (async () => {
 
   const queryList = readFileToJSON("./onchain.json");
   const twisters = new Twisters();
-  let accountInfos
-  let accountRankInfos
-  let getEnergys
-  let getClicks
-  let getInfoUpgradeClicks
-  let upgradeClicks
-  let getInfoUpgradeEnergys
-  let upgradeEnergys
 
     while (true) {
       await Promise.all(
           queryList.map(async (query) => {
             try{
-      
               const getTokens = await getToken(query)
               let totalClick = getRandomInt(1, 5);
               // console.log(getTokens)
               if(getTokens.token){
-                  accountInfos = await accountInfo(getTokens.token)
-                  accountRankInfos = await accountRankInfo(getTokens.token)
-                  username = accountInfos.user.fullName
+                  const accountInfos = await accountInfo(getTokens.token)
+                  const accountRankInfos = await accountRankInfo(getTokens.token)
+                  var username = accountInfos.user.fullName
                         twisters.put(username,{
                           text: `[${moment().format("DD/MM/YY HH:mm:ss")}] [${accountInfos.user.fullName}] 🏆 ${accountRankInfos.me.userRank} 🪙 ${accountInfos.user.coins} 🖱 ${accountInfos.user.clicks} ⚡ ${accountInfos.user.energy}  | 🏆 ${accountRankInfos.me.userRank}:${accountInfos.user.league} |🪙 ${accountInfos.user.coins} |🖱 ${accountInfos.user.clicks}:${accountInfos.user.clickLevel} |⚡ ${accountInfos.user.energy}:${accountInfos.user.maxEnergy}:${accountInfos.user.energyLevel}:${accountInfos.user.dailyEnergyRefill}`});
                         if(accountInfos.user.isBanned == false){
@@ -321,17 +311,17 @@ const upgradeEnergy = (bearer) =>
                               const newstotalclick = accountInfos.user.energy/accountInfos.user.clickLevel
                               // console.log(accountInfos.user.energy+" | "+totalclick)
                               if(accountInfos.user.energy > totalclick){
-                                  getClicks = await getClick(getTokens.token,totalClick)
+                                  const getClicks = await getClick(getTokens.token,totalClick)
                                   // if(getClicks)
                                   // console.log(getClicks)
                                 twisters.put(username,{
                                   text: `[${moment().format("DD/MM/YY HH:mm:ss")}] [${accountInfos.user.fullName}] 🏆 ${accountRankInfos.me.userRank} 🪙 ${accountInfos.user.coins} 🖱 ${accountInfos.user.clicks} ⚡ ${accountInfos.user.energy}  |  🏆 ${accountRankInfos.me.userRank} 🪙 ${accountInfos.user.coins} 🖱 ${accountInfos.user.clicks} ⚡ ${accountInfos.user.energy} | Success 🖱 ${getClicks.clicks} ⚡ ${getClicks.energy} 🪙 ${getClicks.coins} 🪫 ${getClicks.hasBoost}`});
               
                                   // check if available for click upgrade
-                                  getInfoUpgradeClicks = await getInfoUpgradeClick(getTokens.token)
+                                  const getInfoUpgradeClicks = await getInfoUpgradeClick(getTokens.token)
                                   // console.log(getInfoUpgradeClicks)
                                   if(getClicks.coins > getInfoUpgradeClicks.level.upgradeCost){
-                                      upgradeClicks = await upgradeClick(getTokens.token)
+                                      const upgradeClicks = await upgradeClick(getTokens.token)
                                       if(upgradeClicks.status == true){
                                           // console.log(upgradeClicks.user)
                                         twisters.put(username,{
@@ -346,10 +336,10 @@ const upgradeEnergy = (bearer) =>
                                   }
                                   
                                   // check if available for energy upgrade
-                                  getInfoUpgradeEnergys = await getInfoUpgradeEnergy(getTokens.token)
+                                  const getInfoUpgradeEnergys = await getInfoUpgradeEnergy(getTokens.token)
                                   // console.log(getInfoUpgradeEnergys)
                                   if(getClicks.coins > getInfoUpgradeEnergys.level.upgradeCost){
-                                      upgradeEnergys = await upgradeEnergy(getTokens.token)
+                                      const upgradeEnergys = await upgradeEnergy(getTokens.token)
                                       if(upgradeEnergys.status == true){
                                           // console.log(upgradeEnergys.user)
                                         twisters.put(username,{
@@ -366,7 +356,7 @@ const upgradeEnergy = (bearer) =>
                               }else{
                                 // twisters.put(username,{
                                 //   text: `[${moment().format("DD/MM/YY HH:mm:ss")}] [${accountInfos.user.fullName}] 🏆 ${accountRankInfos.me.userRank} 🪙 ${accountInfos.user.coins} 🖱 ${accountInfos.user.clicks} ⚡ ${accountInfos.user.energy}  |  Your account not enought ⚡, try to claim daily ⚡...`});
-                                  getEnergys = await getEnergy(getTokens.token)
+                                  const getEnergys = await getEnergy(getTokens.token)
                                   if(getEnergys.status == true){
                                     twisters.put(username,{
                                       text: `[${moment().format("DD/MM/YY HH:mm:ss")}] [${accountInfos.user.fullName}] 🏆 ${accountRankInfos.me.userRank} 🪙 ${accountInfos.user.coins} 🖱 ${accountInfos.user.clicks} ⚡ ${accountInfos.user.energy}  |  Success Refill ⚡: ${getEnergys.user.energy} ⏳ : ${getEnergys.user.lastRepareEnergy}`});
